@@ -1,0 +1,304 @@
+﻿@model User
+@{
+    ViewData["Title"] = "Index";
+
+}
+
+
+@if (Model != null)
+{
+    @*for checking if this my profile or other's profile*@
+    @*lw msh el profile bta3y hy3rd button add friend*@
+
+
+    <div>
+        @*<partial name="../User/_UserInfo.cshtml" />*@
+    </div>
+    <div>
+        <div class="modal" id="editModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body" id="editModalBody">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (ViewBag.Sender == Model.Id && ViewBag.friendstate == "Pending")
+        {
+            <div class="col-8"></div>
+            <div class="col-2">
+                <button class="btn btn-primary btn-block" onclick="getRespond(this, '@Model.Id', true)" value="Accepted">Cofirm</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-danger btn-block" onclick="getRespond(this, '@Model.Id', true)" value="Removed">Remove</button>
+            </div>
+            <div class="col-3">
+                <partial name="../User/UserInfo.cshtml" />
+            </div>
+        }
+        else if (ViewBag.Reciver == Model.Id && ViewBag.friendstate == "Pending")
+        {
+            <div class="col-8"></div>
+            <div class="col-2">
+                <button class="btn btn-secondary disabled btn-block" disabled>Pending</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-danger btn-block" onclick="getRespond(this,'@Model.Id',true)" value="Removed">Remove</button>
+            </div>
+            <div class="col-3">
+                <partial name="../User/UserInfo.cshtml" />
+            </div>
+        }
+        else if (ViewBag.friendstate == "Removed")
+        {
+            <div class="col-8"></div>
+            <div class="col-4">
+                <a asp-route-id="@Model.Id" asp-action="AddFriend" asp-controller="Profile" id="requestLink" class="btn btn-primary btn-block">
+                    Add Friend
+                </a>
+            </div>
+            <div class="col-3">
+                <partial name="../User/UserInfo.cshtml" />
+            </div>
+        }
+        else if (ViewBag.friendstate == "Accepted") //My friend's Profile
+        {
+            <div class="col-8"></div>
+            <div class="col-2">
+                <button class="btn btn-primary disabled btn-block" disabled>Friends</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-danger btn-block" onclick="getRespond(this,'@Model.Id',true)" value="Removed">Remove</button>
+            </div>
+            <div class="col-3">
+                <partial name="../User/UserInfo.cshtml" />
+            </div>
+            <!--Call your partial views Here!-->
+            <div id="posts" class="col-8">
+                <!--Filled from ajax function-->
+            </div>
+        }
+        else if (ViewBag.CurrentUser == Model.Id) //My Profile
+        {
+            <!--Call your partial views Here!-->
+            <div class="col-3">
+                <div id="userInfo"></div>
+                <div id="friendRequest" class="mt-3">
+                    <!--Filled from ajax function-->
+                </div>
+                <div id="friendList" class="mt-3">
+                    <!--Filled from ajax function-->
+                </div>
+            </div>
+            <div class="col-8">
+                <div id="createPost" class="rounded">
+                    <!--Filled from ajax function-->
+                </div>
+                <div id="posts">
+                    <!--Filled from ajax function-->
+                </div>
+            </div>
+        }
+    </div>
+}
+@section Scripts
+    {
+    <script>
+
+        $().ready(function () {
+            loadCreatePost();
+            refreshPosts();
+            refreshRequests();
+            refreshFriendList();
+            refreshUserInfo();
+        });
+
+
+        function refreshUserInfo() {
+            $("#userInfo").load("../User/UserInfo");
+        }
+        //from friend request list
+        function getRespond(btn, myData, reloadPage = false) {
+            var valueState = $(btn).attr("value");
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '../User/RespondToFriendRequest/',
+                data: { senderID: myData, friendshipStateResponse: valueState },
+                success: function (newData) {
+                    if (reloadPage == true) {
+                        location.reload();
+                    }
+                    else {
+                        refreshRequests();
+                        refreshFriendList();
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                }
+            })
+        };
+        function refreshUserInfo() {
+            $("#userInfo").load("../User/UserInfo");
+        }
+        function refreshPosts() {
+            $("#posts").load('../Posts/ProfilePosts/@Model.Id');
+        }
+        function refreshRequests() {
+            $("#friendRequest").load("../User/FriendRequestList");
+        }
+        function refreshFriendList() {
+            $("#friendList").load("../User/FriendList");
+        }
+        function loadCreatePost() {
+            $("#createPost").load("../Posts/Create");
+        }
+        function funEdit() {
+            $("#editModalBody").load('../User/EditInfo');
+
+        }
+        function deletePost(btn,id) {
+            $.get('../Posts/Delete/' + id);
+            setTimeout(function () {
+                refreshPosts();
+            }, 500);
+        }
+        function addPost() {
+            valBody = $.trim($("#createPostBox").val());
+            if (valBody != '') {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("Create","Posts")',
+                    dataType: "json",
+                    data: { Body: valBody },
+                    success: function () {
+                        setTimeout(function () {
+                            refreshPosts();
+                            loadCreatePost();
+                        }, 500);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Erroooooooooooor");
+                    }
+                });
+            }
+        }
+
+        function editInfo() {
+        var id = $("#Id").val();
+        var bio = $("#Bio").val();
+        var birthdate = $("#BirthDate").val();
+        var status = $("#StatusID").children("option:selected").val();
+        $.ajax({
+            url: '/User/EditInfo',
+            method: 'POST',
+            data: { ID: id, Bio: bio, Status: status, BirthDate: birthdate },
+            dataType: 'json',
+            success: function (response) {
+                //window.location.href = response;
+                 $("#editModal").modal("hide");
+                refreshUserInfo();
+            },
+            error: function (xhr, status, error) {
+                alert(status);
+            }
+        })
+    }
+
+        function ToggleLike(caller, id) {
+        var toggle = $(caller).attr("data-mytoggle");
+        var postID = $(caller).attr("data-postID");
+        var likeOwnerID = $(caller).attr("data-likeOwnerID");
+        var numOfLikes = $(`#${id}`).html();
+        var isdeleted;
+        if (toggle == "false") {
+            $(caller).css("color", "blue");
+            $(caller).html("<i class='fas fa-thumbs-down'></i> &nbsp;Unlike");
+            $(caller).attr("data-mytoggle", "true");
+            $(caller).attr("data-isDeleted", "false");
+            isdeleted = $(caller).attr("data-isDeleted");
+            $(`#${id}`).html(parseInt(numOfLikes) + 1);
+
+
+        }
+        else {
+            $(caller).css("color", "black");
+            $(caller).html("<i class='fas fa-thumbs-up'></i> &nbsp;Like");
+            $(caller).attr("data-mytoggle", "false");
+            $(caller).attr("data-isDeleted", "true");
+            isdeleted = $(caller).attr("data-isDeleted");
+            $(`#${id}`).html(parseInt(numOfLikes) - 1);
+
+
+        }
+        $.post('/Posts/PostLike',   // url
+            { PostID: postID, LikeOwnerID: likeOwnerID, isDeleted: isdeleted }, // data to be submit
+            function (data, status, jqXHR) {// success callback
+                console.log(status)
+            }
+        )
+
+
+    }
+        function ShowModal(postID, caller) {
+        var numOfLikes = $(caller).html()
+        if (numOfLikes != 0) {
+            $.ajax({
+
+                url: "/Posts/ShowLikeOwners",
+                method: 'GET',
+                data: { PostID: postID },
+                success: function (result) {
+                    $('#renderModal').html(result);
+                    $('#likeOwnersModal').modal();
+                },
+                error: function (error, status, xhr) {
+                    alert(status)
+                }
+
+            })
+        }
+
+        }
+         function changeProfile() {
+
+            var fileUpload = $("#imgFile").get(0);
+            var files = fileUpload.files;
+
+            var fileData = new FormData();
+
+            for (var i = 0; i < files.length; i++) {
+                fileData.append(files[i].name, files[i]);
+            }
+
+
+            $.ajax({
+                url: '/User/ChangeProfile',
+                type: "POST",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+                    refreshUserInfo();
+                    refreshPosts();
+                },
+                error: function (err) {
+                    alert(err.statusText);
+                }
+            });
+        }
+
+    </script>
+}
+
+

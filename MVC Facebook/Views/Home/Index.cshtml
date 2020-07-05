@@ -1,0 +1,182 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="row">
+    <div class="offset-1 col-8">
+        <div id="createPost" class="rounded">
+            <!--Filled from ajax function-->
+        </div>
+        <div id="newsfeed">
+            <!--Filled from ajax function-->
+        </div>
+    </div>
+    <div class="col-3">
+        <div id="friendRequest">
+            <!--Filled from ajax function-->
+        </div>
+        <div id="friendList">
+            <!--Filled from ajax function-->
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+
+        $().ready(function () {
+            loadCreatePost();
+            refreshNewsfeed();
+            refreshRequests();
+            refreshFriendList();
+        });
+
+        function refreshNewsfeed() {
+            $("#newsfeed").load("/Posts/NewsFeed");
+        }
+        function loadCreatePost() {
+            $("#createPost").load("/Posts/Create");
+        }
+        function refreshRequests() {
+            $("#friendRequest").load("../User/FriendRequestList");
+        }
+        function refreshFriendList() {
+            $("#friendList").load("../User/FriendList");
+        }
+        function deletePost(btn,id) {
+            $.get('../Posts/Delete/' + id);
+            setTimeout(function () {
+                refreshNewsfeed();
+            }, 500);
+        }
+        function deleteComment(btn, id) {
+            $.get('../Comments/Delete/' + id);
+            setTimeout(function () {
+                refreshNewsfeed();
+            }, 500);
+        }
+        function addPost() {
+            valBody = $.trim($("#createPostBox").val());
+            if (valBody != '') {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("Create","Posts")',
+                    dataType: "json",
+                    data: { Body: valBody },
+                    success: function () {
+                        setTimeout(function () {
+                            refreshNewsfeed();
+                            loadCreatePost();
+                        }, 500);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Erroooooooooooor");
+                    }
+                });
+            }
+        }
+        function addComment(postId) {
+            valBody = $.trim($("#commentbox_" + postId).val());
+            if (valBody != '') {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("addComment","Comments")',
+                    dataType: "json",
+                    data: { PostID: postId, Body: valBody },
+                    success: function () {
+                        setTimeout(function () {
+                            refreshNewsfeed();
+                        }, 500);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Erroooooooooooor");
+                    }
+                });
+            }
+        }
+        function ToggleLike(caller, id) {
+            var toggle = $(caller).attr("data-mytoggle");
+            var postID = $(caller).attr("data-postID");
+            var likeOwnerID = $(caller).attr("data-likeOwnerID");
+            var numOfLikes = $(`#${id}`).html();
+            var isdeleted;
+            if (toggle == "false") {
+                $(caller).css("color", "blue");
+                $(caller).html("<i class='fas fa-thumbs-down'></i> &nbsp;Unlike");
+                $(caller).attr("data-mytoggle", "true");
+                $(caller).attr("data-isDeleted", "false");
+                isdeleted = $(caller).attr("data-isDeleted");
+                $(`#${id}`).html(parseInt(numOfLikes) + 1);
+
+
+            }
+            else {
+                $(caller).css("color", "black");
+                //$(iconID).attr("class","fas fa-thumbs-up");
+                $(caller).html("<i class='fas fa-thumbs-up'></i> &nbsp;Like");
+                $(caller).attr("data-mytoggle", "false");
+                $(caller).attr("data-isDeleted", "true");
+                isdeleted = $(caller).attr("data-isDeleted");
+                $(`#${id}`).html(parseInt(numOfLikes) - 1);
+
+
+            }
+            //)
+            // debugger
+            $.post('/Posts/PostLike',   // url
+                { PostID: postID, LikeOwnerID: likeOwnerID, isDeleted: isdeleted }, // data to be submit
+                function (data, status, jqXHR) {// success callback
+                    console.log(status)
+                }
+            );
+
+
+        }
+        function ShowModal(postID, caller) {
+            // var postID = $('#pID').val();
+            var numOfLikes = $(caller).html()
+            if (numOfLikes != 0) {
+                //alert(numOfLikes);
+                $.ajax({
+
+                    url: "/Posts/ShowLikeOwners",/*/${postID}`,*/
+                    method: 'GET',
+                    data: { PostID: postID },
+                    success: function (result) {
+                        $('#renderModal').html(result);
+                        $('#likeOwnersModal').modal();
+                    },
+                    error: function (error, status, xhr) {
+                        alert(status)
+                    }
+
+                })
+            }
+
+        };
+
+        //from friend request list
+        function getRespond(btn, myData, reloadPage = false) {
+            var valueState = $(btn).attr("value");
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '../User/RespondToFriendRequest/',
+                data: { senderID: myData, friendshipStateResponse: valueState },
+                success: function (newData) {
+                    if (reloadPage == true) {
+                        location.reload();
+                    }
+                    else {
+                        refreshRequests();
+                        refreshFriendList();
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                }
+            });
+        };
+    </script>
+}

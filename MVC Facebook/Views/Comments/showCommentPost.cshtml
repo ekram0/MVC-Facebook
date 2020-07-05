@@ -1,0 +1,42 @@
+﻿@model List<Comment>
+@inject UserManager<User> UserManager
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@if (Model.Count() > 0)
+{ 
+        @foreach (var comment in Model)
+        {
+            if (comment.IsDeleted == false)
+            {
+                <div class="border border-top-0">
+                    <div class="row p-3">
+                        <div class="col-1">
+                            <img src="~/images/@comment.CommentOwner.Picture" width="50" height="50" />
+                        </div>
+                        <div class="pt-1 col-9">
+                            @Html.ActionLink($"{comment.CommentOwner.FullName}", "Index", "Profile", routeValues: new { id = comment.CommentOwnerID }, new { @class = "h6" })
+                            <div class="col-12 disabled font-italic small p-0 text-secondary">
+                                @comment.TimeStamp.ToUniversalTime()
+                            </div>
+                        </div>
+                        @{
+                            if (comment.CommentOwnerID == @UserManager.GetUserId(User))
+                            {
+                                <div class="col-2">
+                                    <button class="btn btn-primary col-12" onclick="deleteComment(this,'@comment.ID')">Delete</button>
+
+                                </div>
+                            }
+                        }
+                        <div class="col-12">
+                            <div class="offset-1 bg-light p-2 mt-2 rounded d-inline-block">
+                                @comment.Body
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    
+}

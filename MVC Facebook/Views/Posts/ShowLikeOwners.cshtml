@@ -1,0 +1,49 @@
+﻿@model IEnumerable<User>
+
+<div class="modal fade" id="likeOwnersModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">All &nbsp;@Model?.Count()&nbsp;<i style="color:blue" class="fas fa-thumbs-up"></i></h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        <div class="row p-3 mb-3">
+                            <div class="col-1">
+                                <img src="~/images/@item.Picture" style="border-radius:50%" width="50" height="50" />
+                            </div>
+                            &nbsp;&nbsp;
+                            <div class="ml-2 pt-1 col-6">
+                                @Html.ActionLink($"{item.FullName}", "Index", "Profile", routeValues: new { id = item.Id }, new { @class = "h6" })
+
+                            </div>
+                            @{
+                                var friendShipExists = ((IEnumerable<User>)ViewBag.AllFriends).Any(f => f.FullName == item.FullName);
+                                if (!friendShipExists && item.FullName != (ViewBag.User).FullName )
+                                {
+                                    <div class="ml-1 pt-1 col-4">
+                                        <a asp-route-id="@item.Id" asp-action="AddFriend" asp-controller="Profile" id="requestLink" class="btn btn-primary btn-block">
+                                            Add Friend
+                                        </a>
+                                    </div>
+                                }
+                               
+                            }
+                        </div>
+                        <hr />
+                    }
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+

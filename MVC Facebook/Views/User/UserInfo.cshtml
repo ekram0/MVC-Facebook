@@ -1,0 +1,74 @@
+﻿@model MVC_Facebook.Models.User
+@inject UserManager<User> userManager
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<style>
+    .container {
+        position: relative;
+        font-family: Arial;
+    }
+
+    .text-block {
+        position: absolute;
+        bottom: -12px;
+        right: 126px;
+        color: black;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<div class="card">
+    <div class="container">
+        <div class="row">
+            <img src="~/images/@Model.Picture" class="card-img-top" id="userImg" alt="...">
+        </div>
+        @if (Model.Id == userManager.GetUserId(User))
+        {
+            <div>
+                <label for="imgFile" class="btn text-block"><i class="fa fa-camera" style="font-size:24px"></i> Update</label>
+                <input type="file" class="text-block" id="imgFile" style="visibility:hidden;" onchange="changeProfile()" />
+            </div>
+        }
+    </div>
+
+    <div class="card-body">
+        <h5 class="card-title">@Model.FullName.ToString()</h5>
+        <div>
+            <p class="card-title"><i class="fa fa-globe" style="font-size:24px"></i> Bio</p>
+            <p class="card-text">@Model.Bio</p>
+        </div>
+
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><i class="fa fa-birthday-cake" style="font-size:16px"></i> @Model.BirthDate.ToLongDateString()</li>
+        @if (Model.Address != null)
+        {
+            <li class="list-group-item">
+                <i class="fa fa-map-marker" style="font-size:24px"></i> @Model.Address.City, @Model.Address.Country
+            </li>
+        }
+        @{
+            if (Model.Gender == Gender.Male)
+            {
+                <li class="list-group-item"><i class="fa fa-male" style="font-size:24px"></i> @Model.Gender</li>
+            }
+            else
+            {
+                <li class="list-group-item"><i class="fa fa-female" style="font-size:24px"></i> @Model.Gender</li>
+            }
+        }
+        <li class="list-group-item">
+            <i class="fa fa-heart" style="font-size:16px"></i> @Model.Status
+        </li>
+    </ul>
+    @if (Model.Id == userManager.GetUserId(User))
+    {
+        <div class="card-body">
+            <div class="card-link text-center">
+                <button id="btnEdit" class="btn btn-primary card-link" value="EditInfo" data-toggle="modal" data-target="#editModal" onclick="funEdit()">EditInfo</button>
+            </div>
+        </div>
+    }
+</div>

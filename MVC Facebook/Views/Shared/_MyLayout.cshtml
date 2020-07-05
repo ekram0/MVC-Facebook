@@ -1,0 +1,155 @@
+﻿@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MVC_Facebook</title>
+    <link href="~/Content/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    @*<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">*@
+
+
+</head>
+<body class="bg-light">
+    <header style="position:fixed;z-index:10;width:100%">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light btn-primary box-shadow mb-3">
+            <div class="container">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a class="navbar-brand text-white">MVC_Facebook</a>
+                    if (!User.IsInRole("Admin"))
+                    {
+                        @Html.TextBox("strName", null, new { id = "txtSearch", size = 60, placeholder = "Enter Name", @class = "form-control col-6 ml-2" })
+                    }
+                }
+                else
+                {
+                    <a class="navbar-brand text-white" asp-area="Identity" asp-page="/Account/MyLogin">MVC_Facebook</a>
+                }
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_MyLoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3" style="position:relative;top:80px">
+            @*position:relative;z-index:-1;*@
+
+            @RenderBody()
+
+        </main>
+    </div>
+    <br />
+    <footer class="border-top footer text-muted" style="position:relative;top:80px">
+        <div class="container">
+            &copy; 2020 - MVC_Facebook - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    @*<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>*@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @*<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>*@
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/scripts/jquery.js" type="text/javascript"></script>
+    <script src="~/Scripts/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+
+    @*<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>*@
+
+
+    @RenderSection("Scripts", required: false)
+
+    <!-- Script for Search box -->
+    <script type="text/javascript">
+        $("#txtSearch").autocomplete({
+            focus: function (event, ui) {
+                $(this).val(ui.item.fullName.firstName + " " + ui.item.fullName.lastName);
+                return false;
+            },
+            source: function (request, response) {
+                $.ajax({
+                    url: '@Url.Action("getName","User")',
+                    contentType: "application/json",
+                    data: { search: $("#txtSearch").val() },
+                    success: function (data) {
+                        response(data);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Erroooooooooooor");
+                    }
+                });
+            },
+            select: function (e, i) {
+                window.location.pathname = 'Profile/' + i.item.id;
+            },
+        }).autocomplete('instance')._renderItem = function (ul, item) {
+            return $('<li>')
+                .append("<div><img width='80' class='rounded' src='../images/" + item.picture + "' /><span>    " + item.fullName.firstName + " " + item.fullName.lastName + "</span></div>")
+                .appendTo(ul);
+
+
+            //return $('<li>')
+            //    .append('<div>')
+            //    .append("<img width='80' class='rounded' src='../images/"+item.picture+"' />")
+            //    .append('<a>' + item.fullName.firstName + " " + item.fullName.lastName + '</a>')
+            //    .append('</div></li>')
+            //    .appendTo(ul);
+        };
+
+         function showComments(id) {
+            $('#commentPost_' + id).load('../Comments/showCommentPost/' + id);
+            }
+         function deleteComment(btn, ValId) {
+            $.ajax({                  
+                    url: '@Url.Action("Delete","Comments")',
+                    dataType: "json",
+                    data: { id: ValId },
+                    success: function (data) {
+                        setTimeout(function () {
+                           // refreshPosts();
+                            debugger;
+                            $('#commentPost_' + data).load('../Comments/showCommentPost/' + data);
+                        }, 500);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Erroooooooooooor");
+                    }
+                });
+        }
+        function addComment(postId) {
+            valBody = $.trim($("#commentbox_" + postId).val());
+            if (valBody != '') {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("addComment","Comments")',
+                    dataType: "json",
+                    data: { PostID: postId, Body: valBody },
+                    success: function (data) {
+                        setTimeout(function () {                        
+                            $('#commentPost_' + data).load('../Comments/showCommentPost/' + data);
+                            document.querySelector("#commentbox_" + postId).value = "";
+                        }, 500);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Erroooooooooooor");
+                    }
+                });
+            }
+        }
+
+    </script>
+
+</body>
+</html>

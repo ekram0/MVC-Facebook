@@ -1,0 +1,60 @@
+﻿@model IEnumerable<User>
+@*@inject RoleRepository element*@
+@{
+    ViewData["Title"] = "Index";
+}
+
+<a asp-area="Identity" asp-page="/Account/Register" title="Add new User">Create</a>
+
+<div class="form-group">
+    <div class="input-group">
+        <input id="searchName" type="search" class="form-control" />
+        <span class="input-group-btn">
+            <button class="btn btn-success" onclick="loadSearchName()">Find</button>
+        </span>
+    </div>
+</div>
+
+<div id="FullNameUSer">
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        //$().ready(function () {
+        //    //loadSearchName();
+        //})
+
+        //function loadSearchName() {
+        //    var string = $('#searchName').val();
+        //    alert('before');
+        //     $("#FullNameUSer").get("../Admin/GetAllBySearchName", { FullName: string });
+        //    alert('after');
+        //}
+
+        function loadSearchName() {
+
+            var string = $('#searchName').val();
+            $.ajax({
+                url: '../Admin/GetAllBySearchName',
+                method: 'GET',
+                data: { FullName: string },
+                datatype: 'json',
+                success: function (res) {
+                    $('#FullNameUSer').html(res);
+                },
+                error: function (err) {
+                    alert(err);
+                }
+
+            });
+        }
+
+
+        
+
+    </script>
+}

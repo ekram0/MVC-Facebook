@@ -1,0 +1,83 @@
+﻿@model Role
+@{
+    ViewData["Title"] = "AddNewRole";
+}
+
+<h1>Add New Role</h1>
+
+<form method="post" class="form-group" name="roleForm">
+
+    @Html.HiddenFor(r => r.Id)
+    @Html.LabelFor(r => r.Name)
+    @Html.EditorFor(r => r.Name, new { htmlAttributes = new { @class = "form-control" } })
+    @if (ViewBag.duplicate == "duplicated")
+    {
+        <h4 style="color:red"> Sorry this role already exists</h4>
+    }
+
+    @Html.LabelFor(r => r.Description)
+    @Html.EditorFor(r => r.Description, new { htmlAttributes = new { @class = "form-control" } })
+    <input id="savebtn" type="submit" value="Save" class="mt-4 btn btn-dark"
+           onclick="return validateForm()" />
+
+</form>
+<!-- #region name -->
+@*<div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Success</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @if (ViewBag.duplicate == "duplicated")
+                    {
+                        <h3>This role is already exists</h3>
+                    }
+                    else
+                    {
+                        <h3>You have been create your role successfully</h3>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>*@
+<!-- #endregion -->
+@section Scripts
+{
+    <script>
+
+
+
+        function validateForm() {
+            //if (document.roleForm.Name.value != "" && document.roleForm.Description.value != "") {
+
+            //    $('#exampleModal').modal('toggle');
+            //}
+            //else {
+                if (document.roleForm.Name.value == "") {
+                    alert("Please enter role name!");
+                    document.roleForm.Name.focus();
+                    return false;
+                }
+            if (document.roleForm.Description.value == "") {
+                alert("Please enter role description!");
+                document.roleForm.Description.focus();
+                return false;
+            }
+            else {
+                alert("You have been created your role successfully");
+            }
+            //}
+        }
+
+    </script>
+}   

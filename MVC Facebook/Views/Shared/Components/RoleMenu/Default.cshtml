@@ -1,0 +1,20 @@
+﻿@model IEnumerable<Role>
+
+<div class="btn-group">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Action <span class="caret">Role</span>
+    </button>
+
+    <ul class="dropdown-menu">
+        @foreach (var item in Model)
+        {
+            <li>
+                <a asp-controller="RolesController"
+                   asp-action="Edit"
+                   asp-route-id="@item.Id"
+                   asp-route-role ="@item.Name">@item.Name</a>
+                
+            </li>
+        }
+    </ul>
+</div>

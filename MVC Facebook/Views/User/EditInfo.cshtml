@@ -1,0 +1,77 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model User
+@*@using (Html.BeginForm("EditInfo", "User", FormMethod.Post))
+{*@
+<form>
+    <div class="form-horizontal">
+        <div class="form-group">
+            @Html.HiddenFor(model => model.Id, htmlAttributes: new { @class = "control-label col-md-2" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Bio, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Bio)
+            </div>
+        </div>
+        @*<div class="form-group">
+            @Html.LabelFor(model => model.BirthDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <input asp-for="@Model.BirthDate" class="form-control" />
+            </div>
+        </div>*@
+        <div class="form-group">
+            @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <select id="StatusID" name="Status">
+                    @if (Model.Status == "Single")
+                    {
+                        <option value="Single" selected>Single</option>
+                        <option value="In Relation">In Relation</option>
+                    }
+                    else
+                    {
+                        <option value="Single" >Single</option>
+                        <option value="In Relation" selected>In Relation</option>
+                    }
+                </select>
+            </div>
+           
+        </div>     
+        <div class="form-group row">
+            <div class="col-2"></div>
+            <div class="col-md-10 ">
+                <input type="button" value="Save" class="btn btn-success"  onclick="editInfo()"/>
+            </div>
+        </div>
+    </div>
+</form>
+@*<script>
+    function editInfo() {
+        debugger;
+        //var user = {
+        //    Id:$("#Id").val(),
+        //    Bio: $("#Bio").val(),
+        //    BirthDate: $("#BirthDate").val(),
+        //    Status: $("#StatusID").children("option:selected").val()
+        //}
+        var id = $("#Id").val();
+        var bio = $("#Bio").val();
+        var birthdate = $("#BirthDate").val();
+        var status = $("#StatusID").children("option:selected").val();
+        $.ajax({
+            url: '/User/EditInfo',
+            method: 'POST',
+            data: { ID: id, Bio: bio, Status: status, BirthDate: birthdate },
+            dataType: 'json',
+            success: function (response) {
+                   //window.location.href = response;
+            },
+            error: function (xhr, status, error) {
+                alert(status);
+            }
+        })
+    }
+</script>*@
+@*}*@

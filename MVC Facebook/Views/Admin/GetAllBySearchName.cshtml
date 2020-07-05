@@ -1,0 +1,79 @@
+﻿@model IEnumerable<User>
+@inject UserManager<User> UserManager
+@inject RoleManager<Role> RoleManager
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Block / Unblock</th>
+            <th scope="col">Role</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+
+            <tr>
+                <td>@item.FullName</td>
+                <td>
+                    @if (@item.IsBlocked == false)
+                    {
+                        <input id="@item.Id" class="btn_blockUnblock" type="checkbox" checked data-toggle="toggle" data-on="Block" data-off="UnBlock" data-onstyle="danger" data-offstyle="success" />
+                    }
+                    else
+                    {
+                        <input id="@item.Id" class="btn_blockUnblock" type="checkbox" data-toggle="toggle" data-on="Block" data-off="UnBlock" data-onstyle="danger" data-offstyle="success" />
+                    }
+                </td>
+                <td>
+                    <select class="drop" id="D_@(item.Id)">
+                        @foreach (var r in RoleManager.Roles)
+                        {
+                            @if (await @UserManager.IsInRoleAsync(await UserManager.FindByIdAsync(@item.Id), @r.Name))
+                            {
+                                <option value="@r.Name" selected="selected">@r.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@r.Name">@r.Name</option>
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+
+        }
+    </tbody>
+
+</table>
+<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+
+<script>
+
+    $('.btn_blockUnblock').change(function () {
+        $.post('/Admin/ToggleBlockUser', { id: this.id });
+    });
+
+    $(".drop").change(function (e) {
+            var curID = this.id.split('_')
+            $.ajax({
+                method: 'post',
+                url: '@Url.Action("EditRole","Admin")',
+                datatype: "json",
+                data: { Id: curID[1], RoleName: $(".drop").val() },
+                success: function () {
+
+                },
+                error: function (xhr, status, error) {
+                    alert("erroooooooooooor");
+                }
+            });
+        });
+</script>
